@@ -1,0 +1,21 @@
+# Ralph Progress Log
+Started: 2026-06-10 10:00:00
+---
+
+## Codebase Patterns
+(This section consolidates reusable patterns discovered during iterations.
+Add general, reusable patterns here that future iterations should know.)
+
+- Example: Use `sql<number>` template for aggregations
+- Example: Always use `IF NOT EXISTS` for migrations
+
+---
+
+## [Date/Time] - [Story ID]
+- What was implemented
+- Files changed
+- **Learnings for future iterations:**
+  - Patterns discovered (e.g., "this codebase uses X for Y")
+  - Gotchas encountered (e.g., "don't forget to update Z when changing W")
+  - Useful context (e.g., "the evaluation panel is in component X")
+---
