@@ -11,7 +11,7 @@ Ralph-mode is the executor half of this workflow:
 | Phase | Tool | Output |
 |---|---|---|
 | Plan | `pi --plan` + `/compile-prd` | `prd.json` |
-| Execute | `./ralph-mode/run.sh` | Implemented stories, commits, progress memory |
+| Execute | `./ralph-mode/run.sh --model <model>` | Implemented stories, commits, progress memory |
 
 ## Quick Start
 
@@ -23,13 +23,14 @@ pi --plan
 # then run /compile-prd inside pi
 
 # 2. Execute stories with Ralph Mode
-MAX_ITERATIONS=10 ./ralph-mode/run.sh
+./ralph-mode/run.sh --model gpt-5.5
 
-# Or pass iterations as an argument
-./ralph-mode/run.sh 10
+# Or set/pass max iterations
+MAX_ITERATIONS=10 ./ralph-mode/run.sh --model gpt-5.5
+./ralph-mode/run.sh --model gpt-5.5 10
 ```
 
-Default `MAX_ITERATIONS` is `20`.
+`--model <model>` is required and is passed through to `pi --model`. Default `MAX_ITERATIONS` is `20`.
 
 ## Required `prd.json` Shape
 
@@ -62,7 +63,7 @@ Default `MAX_ITERATIONS` is `20`.
 Each iteration starts a fresh pi instance using:
 
 ```bash
-pi -p "$(cat ralph-mode/prompt.md)"
+pi --model <model> -p "$(cat ralph-mode/prompt.md)"
 ```
 
 The agent then follows the official Ralph-style flow:

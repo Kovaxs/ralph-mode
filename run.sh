@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Ralph Mode - pi-based autonomous agent loop
-# Usage: MAX_ITERATIONS=10 ./ralph-mode/run.sh
-#        ./ralph-mode/run.sh 10
+# Usage: ./ralph-mode/run.sh --model <model> [max-iterations]
+#        MAX_ITERATIONS=10 ./ralph-mode/run.sh --model <model>
+#        ./ralph-mode/run.sh --model sonnet 10
 
 set -euo pipefail
 
@@ -13,16 +14,56 @@ PROGRESS_FILE="$RUN_DIR/progress.txt"
 ARCHIVE_DIR="$RUN_DIR/archive"
 LAST_BRANCH_FILE="$RUN_DIR/.ralph-last-branch"
 MAX_ITERATIONS="${MAX_ITERATIONS:-20}"
+MODEL=""
+POSITIONAL_MAX_SET=0
 
-if [[ $# -gt 0 ]]; then
-  if [[ "$1" =~ ^[0-9]+$ ]]; then
-    MAX_ITERATIONS="$1"
-  else
-    echo "ERROR: invalid argument '$1'"
-    echo "Usage: MAX_ITERATIONS=10 $0"
-    echo "   or: $0 10"
-    exit 1
-  fi
+usage() {
+  echo "Usage: $0 --model <model> [max-iterations]"
+  echo "   or: MAX_ITERATIONS=10 $0 --model <model>"
+}
+
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --model)
+      if [[ $# -lt 2 || -z "$2" ]]; then
+        echo "ERROR: --model requires a value"
+        usage
+        exit 1
+      fi
+      MODEL="$2"
+      shift 2
+      ;;
+    --model=*)
+      MODEL="${1#--model=}"
+      shift
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -* )
+      echo "ERROR: invalid argument '$1'"
+      usage
+      exit 1
+      ;;
+    *)
+      if [[ "$1" =~ ^[0-9]+$ && "$POSITIONAL_MAX_SET" -eq 0 ]]; then
+        MAX_ITERATIONS="$1"
+        POSITIONAL_MAX_SET=1
+        shift
+      else
+        echo "ERROR: invalid argument '$1'"
+        usage
+        exit 1
+      fi
+      ;;
+  esac
+done
+
+if [[ -z "$MODEL" ]]; then
+  echo "ERROR: --model is required"
+  usage
+  exit 1
 fi
 
 if [[ ! "$MAX_ITERATIONS" =~ ^[0-9]+$ ]] || [[ "$MAX_ITERATIONS" -lt 1 ]]; then
@@ -113,7 +154,7 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
   echo "  Ralph Iteration $i of $MAX_ITERATIONS ($REMAINING remaining)"
   echo "==============================================================="
 
-  OUTPUT=$(pi -p "$PROMPT_CONTENT" 2>&1 | tee /dev/stderr) || true
+  OUTPUT=$(pi --model "$MODEL" -p "$PROMPT_CONTENT" 2>&1 | tee /dev/stderr) || true
 
   # Official Ralph-compatible stop signal. Verify prd.json too so a tool
   # echoing the prompt cannot create a false completion.
